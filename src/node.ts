@@ -5,7 +5,7 @@ const	KEY: string = "1337";
 const	app = express();
 app.get("/api", (req: Request, res: Response) =>
 {
-	const	key = req.query.apiKey;
+	const	key = req.headers["x-api-key"];
 	if (key === KEY)
 	{
 		res.json(
