@@ -5,7 +5,7 @@ import { products } from "./products";
 const	server = fastify({logger: true});
 server.register(cors,
 {
-	origin: "https://my-react-projects-e-commerce.vercel.app/",
+	origin: "https://my-react-projects-e-commerce.vercel.app",
 });
 
 interface	params
