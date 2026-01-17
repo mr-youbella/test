@@ -5,7 +5,7 @@ import { products } from "./products";
 const	server = fastify({logger: true});
 server.register(cors,
 {
-	origin: "http://localhost:3002",
+	origin: "https://google.com",
 });
 
 interface	params
