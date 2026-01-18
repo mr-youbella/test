@@ -13,7 +13,7 @@ const	pool = new Pool
 
 server.get("/products", async () =>
 {
-	const	{rows} = await pool.query("SELECT title, price, old_price, image, gategory, is_new_product FROM products");
+	const	{rows} = await pool.query("SELECT * FROM products");
 	return (rows);
 });
 
