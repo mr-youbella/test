@@ -1,7 +1,10 @@
 import fastify from 'fastify';
+import cors from '@fastify/cors';
 import { Pool } from 'pg';
 
 const	server = fastify({logger: true});
+server.register(cors, {origin: "https://my-react-projects-e-commerce.vercel.app"});
+
 const	pool = new Pool
 ({
 	connectionString: "postgresql://postgres:uTcpdbCfpKtpSlQYNYtIBMMRRRIIMSPB@ballast.proxy.rlwy.net:20026/railway",
