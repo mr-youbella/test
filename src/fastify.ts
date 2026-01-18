@@ -109,11 +109,8 @@ import { Pool } from 'pg'
 const	server = fastify({logger: true});
 
 const pool = new Pool({
-  host: '127.0.0.1',
-  port: 5432,
-  user: 'postgres',
-  password: 'Mryoubella01**',
-  database: 'test_db',
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 })
 
 server.get('/users', async () => {
