@@ -109,13 +109,13 @@ import { Pool } from 'pg'
 const	server = fastify({logger: true});
 
 const pool = new Pool({
-  connectionString: "postgresql://postgres:uTcpdbCfpKtpSlQYNYtIBMMRRRIIMSPB@ballast.proxy.rlwy.net:20026/railway",
+  connectionString: process.env.DATABASE_PUBLIC_URL,
   ssl: { rejectUnauthorized: false },
 })
 
 server.get('/users', async () => {
-  const { rows } = await pool.query('SELECT * FROM test_db')
-  return rows
+  const { rows } = await pool.query('SELECT * FROM test_db');
+  return rows;
 })
 
 server.listen({ port: Number(process.env.PORT) || 3001, host: '0.0.0.0' })
