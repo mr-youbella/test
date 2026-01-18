@@ -121,5 +121,5 @@ server.get('/users', async () => {
   return rows
 })
 
-server.listen({ port: Number(process.env.PORT) || 3001, host: '127.0.0.1' })
+server.listen({ port: Number(process.env.PORT) || 3001, host: '0.0.0.0' })
 
