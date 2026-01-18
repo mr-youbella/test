@@ -109,7 +109,7 @@ import { Pool } from 'pg'
 const	server = fastify({logger: true});
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: "postgresql://postgres:uTcpdbCfpKtpSlQYNYtIBMMRRRIIMSPB@ballast.proxy.rlwy.net:20026/railway",
   ssl: { rejectUnauthorized: false },
 })
 
