@@ -106,10 +106,10 @@
 import fastify from 'fastify';
 import { Pool } from 'pg'
 
-const	server = fastify({logger: true});
+const	server = fastify({logger: false});
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_PUBLIC_URL,
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 })
 
