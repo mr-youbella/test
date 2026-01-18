@@ -114,7 +114,7 @@ const pool = new Pool({
 })
 
 server.get('/users', async () => {
-  const { rows } = await pool.query('SELECT * FROM users')
+  const { rows } = await pool.query('SELECT * FROM test_db')
   return rows
 })
 
