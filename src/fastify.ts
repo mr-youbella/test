@@ -1,13 +1,13 @@
 import fastify from 'fastify';
 import cors from '@fastify/cors';
-import type { ProductsType, EmailType } from './interfaces';
-import { Pool } from 'pg';
+import type { ProductsType, EmailType, UsersType } from './interfaces';
+import postgres from 'fastify-postgres';
+import argon2 from 'argon2';
 
 const	server = fastify({logger: true});
 server.register(cors, {origin: ["https://my-react-projects-e-commerce.vercel.app", "http://localhost:3000"]});
-
-const	pool = new Pool
-({
+server.register(postgres,
+{
 	connectionString: "postgresql://postgres:uTcpdbCfpKtpSlQYNYtIBMMRRRIIMSPB@ballast.proxy.rlwy.net:20026/railway",
 	ssl: {rejectUnauthorized: false},
 });
@@ -15,13 +15,13 @@ const	pool = new Pool
 // Products
 server.get("/products", async () =>
 {
-	const	{rows} = await pool.query("SELECT * FROM products");
+	const	{rows} = await server.pg.query("SELECT * FROM products");
 	return (rows);
 });
 server.post<{Body: ProductsType}>("/products", async (req, res) =>
 {
 	const	{title, price, old_price, image, gategory, is_new_product} = req.body;
-	await	pool.query(`INSERT INTO products (title, price, old_price, image, gategory, is_new_product) VALUES ('${title}', '${price}', '${old_price}', '${image}', '${gategory}', '${is_new_product}')`);
+	await	server.pg.query(`INSERT INTO products (title, price, old_price, image, gategory, is_new_product) VALUES ('${title}', '${price}', '${old_price}', '${image}', '${gategory}', '${is_new_product}')`);
 });
 // Subscribe
 server.post<{Body: EmailType}>("/subscribe", async (req, res) =>
@@ -29,16 +29,26 @@ server.post<{Body: EmailType}>("/subscribe", async (req, res) =>
 	const	{email} = req.body;
 	try 
 	{
-		await	pool.query(`INSERT INTO subscribe (email) VALUES ('${email}')`);
+		await	server.pg.query(`INSERT INTO subscribe (email) VALUES ('${email}')`);
 	}
 	catch (e)
 	{
-		res.status(409).send({error: "email=youbella@student.1337.ma already exists."});
+		res.status(409).send({error: `email=${email} already exists.`});
 	}
 });
 // Login
-server.post<{Body: ProductsType}>("/login", async (req, res) =>
+server.post<{Body: UsersType}>("/login", async (req, res) =>
 {
+	const	{email, password} = req.body;
+	const	{rows}  = await server.pg.query<UsersType>(`SELECT * FROM users WHERE email = $1`, [email]);
+	if (rows.length)
+	{
+		const	check_password = await argon2.verify(rows[0].password, password);
+		if (check_password)
+			return (rows);
+		return ({error: "Password incorrect"});
+	}
+	return ({error: "User not Found"});
 });
 
 server.listen({port: Number(process.env.PORT) || 3001, host: "0.0.0.0"}, (error, address) =>

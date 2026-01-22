@@ -20,6 +20,7 @@
 	"devDependencies": {
 		"@types/node": "^25.0.9",
 		"@types/pg": "^8.16.0",
+		"argon2": "^0.44.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.9.3"
 	}
