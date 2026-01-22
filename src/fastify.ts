@@ -7,7 +7,7 @@ import jwt from '@fastify/jwt';
 import fastifyCookie from '@fastify/cookie';
 
 const	server = fastify({logger: true});
-server.register(cors, {origin: ["https://my-react-projects-e-commerce.vercel.app", "http://localhost:3000"]});
+server.register(cors, {origin: ["https://my-react-projects-e-commerce.vercel.app", "http://localhost:3000"], credentials: true});
 server.register(postgres,
 {
 	connectionString: "postgresql://postgres:uTcpdbCfpKtpSlQYNYtIBMMRRRIIMSPB@ballast.proxy.rlwy.net:20026/railway",
