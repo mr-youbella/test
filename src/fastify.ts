@@ -1,9 +1,10 @@
 import fastify from 'fastify';
 import cors from '@fastify/cors';
+import type { ProductsType, EmailType } from './interfaces';
 import { Pool } from 'pg';
 
 const	server = fastify({logger: true});
-server.register(cors, {origin: "https://my-react-projects-e-commerce.vercel.app"});
+server.register(cors, {origin: ["https://my-react-projects-e-commerce.vercel.app", "http://localhost:3000"]});
 
 const	pool = new Pool
 ({
@@ -11,10 +12,33 @@ const	pool = new Pool
 	ssl: {rejectUnauthorized: false},
 });
 
+// Products
 server.get("/products", async () =>
 {
 	const	{rows} = await pool.query("SELECT * FROM products");
 	return (rows);
+});
+server.post<{Body: ProductsType}>("/products", async (req, res) =>
+{
+	const	{title, price, old_price, image, gategory, is_new_product} = req.body;
+	await	pool.query(`INSERT INTO products (title, price, old_price, image, gategory, is_new_product) VALUES ('${title}', '${price}', '${old_price}', '${image}', '${gategory}', '${is_new_product}')`);
+});
+// Subscribe
+server.post<{Body: EmailType}>("/subscribe", async (req, res) =>
+{
+	const	{email} = req.body;
+	try 
+	{
+		await	pool.query(`INSERT INTO subscribe (email) VALUES ('${email}')`);
+	}
+	catch (e)
+	{
+		res.status(409).send({error: "email=youbella@student.1337.ma already exists."});
+	}
+});
+// Login
+server.post<{Body: ProductsType}>("/login", async (req, res) =>
+{
 });
 
 server.listen({port: Number(process.env.PORT) || 3001, host: "0.0.0.0"}, (error, address) =>
