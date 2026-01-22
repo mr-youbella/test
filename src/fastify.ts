@@ -46,9 +46,9 @@ server.post<{Body: UsersType}>("/login", async (req, res) =>
 		const	check_password = await argon2.verify(rows[0].password, password);
 		if (check_password)
 			return (rows);
-		return ({error: "Password incorrect"});
 	}
-	return ({error: "User not Found"});
+	res.status(401);
+	return ({error: "Invalid email or password"});
 });
 
 server.listen({port: Number(process.env.PORT) || 3001, host: "0.0.0.0"}, (error, address) =>
