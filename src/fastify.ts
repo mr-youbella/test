@@ -3,6 +3,8 @@ import cors from '@fastify/cors';
 import type { ProductsType, EmailType, UsersType } from './interfaces';
 import postgres from 'fastify-postgres';
 import argon2 from 'argon2';
+import jwt from '@fastify/jwt';
+import fastifyCookie from '@fastify/cookie';
 
 const	server = fastify({logger: true});
 server.register(cors, {origin: ["https://my-react-projects-e-commerce.vercel.app", "http://localhost:3000"]});
@@ -11,6 +13,8 @@ server.register(postgres,
 	connectionString: "postgresql://postgres:uTcpdbCfpKtpSlQYNYtIBMMRRRIIMSPB@ballast.proxy.rlwy.net:20026/railway",
 	ssl: {rejectUnauthorized: false},
 });
+server.register(jwt, {secret: "72c9afd90265a5796e65feb725f81cde992531269898d7574399a9af5af13b97"});
+server.register(fastifyCookie);
 
 // Products
 server.get("/products", async () =>
@@ -47,6 +51,17 @@ server.post<{Body: UsersType}>("/login", async (req, res) =>
 		if (check_password)
 			return (rows);
 	}
+	// let token = server.jwt.sign({userID: 13});
+	// let check = server.jwt.verify(token);
+	// console.log(check);
+	res.setCookie("token", "testCookie in backend", {
+		httpOnly: true,
+		secure: process.env.NODE_ENV === "production",
+		sameSite: "lax",
+		path: "/",
+		maxAge: 60 * 60 * 24 * 7,
+	  });
+	  
 	res.status(401);
 	return ({error: "Invalid email or password"});
 });
