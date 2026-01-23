@@ -4,7 +4,6 @@ import type { ProductsType, EmailType, UsersType } from './interfaces';
 import postgres from 'fastify-postgres';
 import argon2 from 'argon2';
 import jwt from '@fastify/jwt';
-import fastifyCookie from '@fastify/cookie';
 
 const	server = fastify({logger: true});
 
@@ -15,8 +14,7 @@ server.register(postgres,
 	connectionString: "postgresql://postgres:uTcpdbCfpKtpSlQYNYtIBMMRRRIIMSPB@ballast.proxy.rlwy.net:20026/railway",
 	ssl: {rejectUnauthorized: false},
 });
-server.register(jwt, {secret: "123", sign: {expiresIn: "1m"}, cookie: {cookieName:"1337", signed: true}});
-server.register(fastifyCookie, {secret: "123"});
+server.register(jwt, {secret: "123", sign: {expiresIn: "1h"}});
 
 // Products
 server.get("/products", async () =>
@@ -43,7 +41,7 @@ server.post<{Body: EmailType}>("/subscribe", async (req, res) =>
 	}
 });
 // Login
-server.get<{Body: UsersType}>("/login", async (req, res) =>
+server.post<{Body: UsersType}>("/login", async (req, res) =>
 {
 	const	{email, password} = req.body;
 	const	{rows}  = await server.pg.query<UsersType>(`SELECT * FROM users WHERE email = $1`, [email]);
@@ -51,18 +49,7 @@ server.get<{Body: UsersType}>("/login", async (req, res) =>
 	{
 		const	check_password = await argon2.verify(rows[0].password, password);
 		if (check_password)
-		{
-			res.setCookie("1337", "42",
-			{
-				httpOnly: true,
-				secure: false, 
-				sameSite: "lax",
-				path: '/', 
-				maxAge: 60 * 60,
-				signed: true,
-			});
 			return (rows);
-		}
 	}
 	res.status(401);
 	return ({error: "Invalid email or password"});
