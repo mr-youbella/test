@@ -14,7 +14,7 @@ server.register(postgres,
 	connectionString: "postgresql://postgres:uTcpdbCfpKtpSlQYNYtIBMMRRRIIMSPB@ballast.proxy.rlwy.net:20026/railway",
 	ssl: {rejectUnauthorized: false},
 });
-server.register(jwt, {secret: "123", sign: {expiresIn: "1h"}});
+server.register(jwt, {secret: "1337"})
 
 // Products
 server.get("/products", async () =>
@@ -49,7 +49,10 @@ server.post<{Body: UsersType}>("/login", async (req, res) =>
 	{
 		const	check_password = await argon2.verify(rows[0].password, password);
 		if (check_password)
-			return (rows);
+		{
+			const	token = await server.jwt.sign({email: email}, {expiresIn: "1h"});
+			return ({token: token});
+		}
 	}
 	res.status(401);
 	return ({error: "Invalid email or password"});
