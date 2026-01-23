@@ -1,18 +1,22 @@
-import fastify from 'fastify';
+import fastify, { FastifyError } from 'fastify';
 import cors from '@fastify/cors';
 import type { ProductsType, EmailType, UsersType } from './interfaces';
 import postgres from 'fastify-postgres';
 import argon2 from 'argon2';
 import jwt from '@fastify/jwt';
+import fastifyCookie from '@fastify/cookie';
 
 const	server = fastify({logger: true});
-server.register(cors, {origin: ["https://my-react-projects-e-commerce.vercel.app", "http://localhost:3000"]});
+
+// Register Plugins
+server.register(cors, {origin: ["https://my-react-projects-e-commerce.vercel.app", "http://localhost:3000"], credentials: true});
 server.register(postgres,
 {
 	connectionString: "postgresql://postgres:uTcpdbCfpKtpSlQYNYtIBMMRRRIIMSPB@ballast.proxy.rlwy.net:20026/railway",
 	ssl: {rejectUnauthorized: false},
 });
-server.register(jwt, {secret: "72c9afd90265a5796e65feb725f81cde992531269898d7574399a9af5af13b97"});
+server.register(jwt, {secret: "123", sign: {expiresIn: "1m"}, cookie: {cookieName:"1337", signed: true}});
+server.register(fastifyCookie, {secret: "123"});
 
 // Products
 server.get("/products", async () =>
@@ -39,7 +43,7 @@ server.post<{Body: EmailType}>("/subscribe", async (req, res) =>
 	}
 });
 // Login
-server.post<{Body: UsersType}>("/login", async (req, res) =>
+server.get<{Body: UsersType}>("/login", async (req, res) =>
 {
 	const	{email, password} = req.body;
 	const	{rows}  = await server.pg.query<UsersType>(`SELECT * FROM users WHERE email = $1`, [email]);
@@ -47,11 +51,19 @@ server.post<{Body: UsersType}>("/login", async (req, res) =>
 	{
 		const	check_password = await argon2.verify(rows[0].password, password);
 		if (check_password)
+		{
+			res.setCookie("1337", "42",
+			{
+				httpOnly: true,
+				secure: false, 
+				sameSite: "lax",
+				path: '/', 
+				maxAge: 60 * 60,
+				signed: true,
+			});
 			return (rows);
+		}
 	}
-	// let token = server.jwt.sign({userID: 13});
-	// let check = server.jwt.verify(token);
-	// console.log(check);
 	res.status(401);
 	return ({error: "Invalid email or password"});
 });
