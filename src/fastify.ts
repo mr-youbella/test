@@ -1,4 +1,4 @@
-import fastify, { FastifyError } from 'fastify';
+import fastify from 'fastify';
 import cors from '@fastify/cors';
 import type { ProductsType, EmailType, UsersType } from './interfaces';
 import postgres from 'fastify-postgres';
@@ -57,6 +57,11 @@ server.post<{Body: UsersType}>("/login", async (req, res) =>
 	res.status(401);
 	return ({error: "Invalid email or password"});
 });
+server.get("/verfiy", {preHandler: async (req) => {await req.jwtVerify()}}, async (req) =>
+{
+	return { ok: true };
+});
+
 
 server.listen({port: Number(process.env.PORT) || 3001, host: "0.0.0.0"}, (error, address) =>
 {
