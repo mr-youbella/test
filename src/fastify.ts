@@ -4,6 +4,8 @@ import type { ProductsType, EmailType, UsersType } from './interfaces';
 import postgres from 'fastify-postgres';
 import argon2 from 'argon2';
 import jwt from '@fastify/jwt';
+import { v2 as cloudinary } from 'cloudinary';
+import multiparr from '@fastify/multipart';
 
 const	server = fastify({logger: true});
 
@@ -14,18 +16,66 @@ server.register(postgres,
 	connectionString: "postgresql://postgres:uTcpdbCfpKtpSlQYNYtIBMMRRRIIMSPB@ballast.proxy.rlwy.net:20026/railway",
 	ssl: {rejectUnauthorized: false},
 });
-server.register(jwt, {secret: "1337"})
+server.register(jwt, {secret: "b24579092bdac2b934399bde85fb9f68347890b390f8529c"})
+server.register(multiparr);
+cloudinary.config
+({
+	cloud_name: "durxazo41",
+	api_key: "557158398488963",
+	api_secret: "IETuhEGeteYSQlPIZSXxFPS2Js0"
+});
 
 // Products
-server.get("/products", async () =>
+server.get("/products", async (req, res) =>
 {
-	const	{rows} = await server.pg.query("SELECT * FROM products");
-	return (rows);
+	if (req.headers["secret-key"] === "d05572fece98136e")
+	{
+		const {rows} = await server.pg.query("SELECT * FROM products");
+		return (rows);
+	}
+	res.status(401);
+	return ({error: "Forbidden"});
 });
 server.post<{Body: ProductsType}>("/products", async (req, res) =>
 {
-	const	{title, price, old_price, image, gategory, is_new_product} = req.body;
-	await	server.pg.query(`INSERT INTO products (title, price, old_price, image, gategory, is_new_product) VALUES ('${title}', '${price}', '${old_price}', '${image}', '${gategory}', '${is_new_product}')`);
+	const	data = await req.file();
+	if (!data)
+	{
+		res.status(401);
+		return ({error: "Data no sended"});
+	}
+	const	fields = data.fields as Record<string, {value: string}>;
+	const	product_data = JSON.parse(fields.data.value);
+	const	buffer_image = await data.toBuffer();
+	let		image_url: string = "";
+	try
+	{
+		const	promise = await new Promise<string>((resolve, reject) =>
+		{
+			const	upload_image = cloudinary.uploader.upload_stream({folder: product_data}, (error, result) =>
+			{
+				if (error || !result)
+					return (reject(error));
+				return (resolve(result.url));
+			});
+			upload_image.end(buffer_image);
+		});
+		image_url = promise;
+	}
+	catch (e)
+	{
+		console.log(e);
+		res.status(401).send({error: "Can't send data try again...."});
+	}
+	try
+	{
+		const	{rows} = await server.pg.query(`INSERT INTO products (title, price, old_price, image, gategory, is_new_product) VALUES ('${product_data.title}', '${product_data.price}', '${product_data.old_price}', '${image_url}', '${product_data.gategory}', '${product_data.is_new_product}')`);
+	}
+	catch (e)
+	{
+		console.log(e);
+		res.status(401).send({error: "Can't send data try again...."});
+	}
 });
 // Subscribe
 server.post<{Body: EmailType}>("/subscribe", async (req, res) =>
@@ -61,7 +111,6 @@ server.get("/verfiy", {preHandler: async (req) => {await req.jwtVerify()}}, asyn
 {
 	return { ok: true };
 });
-
 
 server.listen({port: Number(process.env.PORT) || 3001, host: "0.0.0.0"}, (error, address) =>
 {

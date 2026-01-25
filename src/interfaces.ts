@@ -1,10 +1,10 @@
 export interface ProductsType
 {
-	id: number;
+	id?: number;
 	title: string;
 	price: number;
-	old_price?: number | undefined;
-	image: string;
+	old_price: number;
+	image: File;
 	gategory: string;
 	is_new_product: boolean;
 }
