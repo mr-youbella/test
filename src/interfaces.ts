@@ -6,6 +6,10 @@ export interface ProductsType
 	old_price: number;
 	image: File;
 	gategory: string;
+	about: string;
+	description: string;
+	attributes: string;
+	values_attributes: string;
 	is_new_product: boolean;
 }
 

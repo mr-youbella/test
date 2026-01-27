@@ -45,14 +45,14 @@ server.post<{Body: ProductsType}>("/products", async (req, res) =>
 		return ({error: "Data no sended"});
 	}
 	const	fields = data.fields as Record<string, {value: string}>;
-	const	product_data = JSON.parse(fields.data.value);
+	const	product_data: ProductsType = JSON.parse(fields.data.value);
 	const	buffer_image = await data.toBuffer();
 	let		image_url: string = "";
 	try
 	{
 		const	promise = await new Promise<string>((resolve, reject) =>
 		{
-			const	upload_image = cloudinary.uploader.upload_stream({folder: product_data}, (error, result) =>
+			const	upload_image = cloudinary.uploader.upload_stream({folder: "products"}, (error, result) =>
 			{
 				if (error || !result)
 					return (reject(error));
@@ -69,7 +69,7 @@ server.post<{Body: ProductsType}>("/products", async (req, res) =>
 	}
 	try
 	{
-		const	{rows} = await server.pg.query(`INSERT INTO products (title, price, old_price, image, gategory, is_new_product) VALUES ('${product_data.title}', '${product_data.price}', '${product_data.old_price}', '${image_url}', '${product_data.gategory}', '${product_data.is_new_product}')`);
+		const	{rows} = await server.pg.query(`INSERT INTO products (title, price, old_price, image, gategory, is_new_product, about, description, attributes, values_attributes) VALUES ('${product_data.title}', '${product_data.price}', '${product_data.old_price}', '${image_url}', '${product_data.gategory}', '${product_data.is_new_product}', '${product_data.about}', '${product_data.description}', '${product_data.attributes}', '${product_data.values_attributes}')`);
 	}
 	catch (e)
 	{
